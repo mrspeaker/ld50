@@ -10,27 +10,16 @@ const camera_p = new PerspectiveCamera(
   1000
 );
 
-const w = 10;
-const h = 10;
-// const camera = new THREE.OrthographicCamera(
-//   w / -2,
-//   w / 2,
-//   h / 2,
-//   h / -2,
-//   1,
-//   1000
-// );
 const aspect = window.innerWidth / window.innerHeight;
-const frustumSize = 12;
+const frustumSize = 14;
 const camera = new THREE.OrthographicCamera(
   (frustumSize * aspect) / -2,
   (frustumSize * aspect) / 2,
-  frustumSize / 2,
-  frustumSize / -2,
+  frustumSize / 2 - 2,
+  frustumSize / -2 - 2.01,
   1,
   20
 );
-//camera.lookAt(0, 0, 0);
 
 const renderer = new WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);

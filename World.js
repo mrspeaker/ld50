@@ -26,8 +26,8 @@ class World {
       return ac;
     }, models);
 
-    const size = 10;
-    const divisions = 10;
+    const size = 14;
+    const divisions = 14;
 
     const gridHelper = new THREE.GridHelper(size, divisions);
     gridHelper.rotation.x = Math.PI / 2;
