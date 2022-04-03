@@ -111,7 +111,7 @@ class World {
     });
 
     models.compy.model.rotation.y += -0.3 * dt;
-    models.dish.model.rotation.y += 1.4 * dt;
+    models.dish.model.rotation.y += -1.4 * dt;
 
     models.cubes.forEach(c => {
       c.position.x += 0.5 * dt;
