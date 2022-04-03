@@ -29,12 +29,17 @@ class World {
     const size = 14;
     const divisions = 14;
 
-    const gridHelper = new THREE.GridHelper(size, divisions);
+    const gridHelper = new THREE.GridHelper(
+      size,
+      divisions,
+      0x282828,
+      0x333333
+    );
     gridHelper.rotation.x = Math.PI / 2;
     scene.add(gridHelper);
 
     // Set positions
-    const { man, tree, moon, cube } = models;
+    const { man, tree, moon, cube, compy } = models;
     man.model.position.set(-0.5, 0, 0);
     man.model.rotation.z = (Math.PI / 180) * -25;
     tree.model.position.set(-2, 0, 0);
@@ -47,6 +52,13 @@ class World {
 
     cube.model.position.set(0.5, 0.5, -0.5);
     scene.add(cube.model);
+
+    const c2 = cube.model.clone();
+    c2.position.set(-4.5, -4.5, -0.5);
+    scene.add(c2);
+
+    compy.model.position.set(4.5, 4, 0);
+    scene.add(compy.model);
 
     // Anims
     const mixer = new THREE.AnimationMixer(man.model);
@@ -87,13 +99,15 @@ class World {
     mixer.update(dt);
     models.moon.model.rotation.y += 1 * dt;
     models.cube.model.rotation.x += 0.5 * dt;
-
+    models.man.model.rotation.z += 1 * dt;
     models.lines.forEach(l => {
       l.position.x -= 0.5 * dt;
       if (l.position.x < -3) {
         l.position.x += 4;
       }
     });
+
+    models.compy.model.rotation.y += -0.3 * dt;
 
     models.cubes.forEach(c => {
       c.position.x += 0.5 * dt;
@@ -107,14 +121,15 @@ class World {
 }
 
 async function loadModels() {
-  const [man, tub, tree, moon, cube] = (await Promise.all([
+  const [man, tub, tree, moon, cube, compy] = (await Promise.all([
     loader.loadAsync("res/walk.glb"),
     loader.loadAsync("res/cubel.glb"),
     loader.loadAsync("res/tree.glb"),
     loader.loadAsync("res/moon.glb"),
-    loader.loadAsync("res/cube.glb")
+    loader.loadAsync("res/cube.glb"),
+    loader.loadAsync("res/compy.glb")
   ])).map(setupModel);
-  return { man, tub, tree, moon, cube };
+  return { man, tub, tree, moon, cube, compy };
 }
 
 function setupModel(data) {

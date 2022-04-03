@@ -30,12 +30,12 @@ const scene = new Scene();
 const light_amb = new THREE.AmbientLight(0x707070);
 scene.add(light_amb);
 
-const light = new THREE.PointLight(0xffffff, 4, 10);
-light.position.set(0, 10, 4);
+const light = new THREE.PointLight(0x0000ff, 4, 20);
+light.position.set(0, 10, 5);
 light.castShadow = false;
 scene.add(light);
-const light2 = new THREE.PointLight(0xffffff, 2, 10);
-light2.position.set(3, 0, 3);
+const light2 = new THREE.PointLight(0xffffff, 4, 20);
+light2.position.set(3, 0, 5);
 scene.add(light2);
 
 camera.position.z = 10;
@@ -47,9 +47,14 @@ function animate(world) {
   requestAnimationFrame(() => animate(world));
   renderer.render(scene, camera);
 
-  var delta = clock.getDelta();
-  time += delta;
-  world.update(delta, time, scene);
+  var dt = clock.getDelta();
+  time += dt;
+  world.update(dt, time, scene);
+
+  light2.position.x = Math.cos(time) * 6;
+  light2.position.y = Math.sin(time) * 6;
+  light.position.x = -(Math.cos(time * 1.5) * 7);
+  light.position.y = -(Math.sin(time * 1.5) * 7);
 }
 
 async function main() {
