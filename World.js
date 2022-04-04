@@ -10,7 +10,7 @@ class World {
   constructor(scene) {
     this.scene = scene;
     this.mixer = null;
-    this.models = { cubes: [] };
+    this.models = { cubes: [], other:{} };
     this.times = {};
   }
 
@@ -43,14 +43,15 @@ class World {
     man.model.position.set(-0.5, 0, 0);
     man.model.rotation.z = (Math.PI / 180) * -25;
     tree.model.position.set(-2, 0, 0);
-    //    tree.model.rotation.y = Math.PI;
+
     scene.add(man.model);
     scene.add(tree.model);
 
-    moon.model.position.set(4.5, -3, 0);
+    moon.model.position.set(2, -1.5, 0);
+    moon.model.scale.set(0.75,0.75,0.75);
     scene.add(moon.model);
 
-    dish.model.position.set(-5, 4, 0);
+    dish.model.position.set(-4, 3, 0);
     dish.model.rotation.y = -Math.PI / 2;      
 
     scene.add(dish.model);
@@ -60,10 +61,11 @@ class World {
     scene.add(cube.model);
 
     const c2 = cube.model.clone();
-    c2.position.set(-4.5, -4.5, -0.5);
+    c2.position.set(-3.5, -1.5, -0.5);
+    models.other.c2 = c2;
     scene.add(c2);
 
-    compy.model.position.set(4.5, 4, 0);
+    compy.model.position.set(2.5, 3, 0);
     scene.add(compy.model);
 
 
@@ -115,7 +117,7 @@ class World {
     });
 
     models.compy.model.rotation.y += -0.3 * dt;
-    models.dish.model.rotation.y += -1.4 * dt;
+    models.dish.model.rotation.y += 1.4 * dt;
 
     models.cubes.forEach(c => {
       c.position.x += 0.5 * dt;
@@ -125,6 +127,8 @@ class World {
         models.cubes = models.cubes.filter(cu => cu != c);
       }
     });
+
+    models.other.c2.rotation.z -= Math.abs(Math.sin(time) * 0.4 * dt);
   }
 }
 
