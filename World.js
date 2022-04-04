@@ -18,7 +18,7 @@ class World {
     const { scene, models, times } = this;
     const modelData = await loadModels();
 
-    times.moon = 4.5;
+    times.moon = 0;
 
     // Add them to models
     Object.entries(modelData).reduce((ac, el) => {
@@ -47,8 +47,14 @@ class World {
     scene.add(man.model);
     scene.add(tree.model);
 
-    moon.model.position.set(-4, 4, 0);
+    moon.model.position.set(4.5, -3, 0);
     scene.add(moon.model);
+
+    dish.model.position.set(-5, 4, 0);
+    dish.model.rotation.y = -Math.PI / 2;      
+
+    scene.add(dish.model);
+
 
     cube.model.position.set(0.5, 0.5, -0.5);
     scene.add(cube.model);
@@ -60,8 +66,6 @@ class World {
     compy.model.position.set(4.5, 4, 0);
     scene.add(compy.model);
 
-    dish.model.position.set(4.5, -3, 0);
-    scene.add(dish.model);
 
     // Anims
     const mixer = new THREE.AnimationMixer(man.model);
@@ -87,12 +91,12 @@ class World {
     const { mixer, models, times } = this;
 
     if (time > times.moon) {
-      times.moon += 6;
+      times.moon += 4.5;
       // spawn.
       const c = models.moon.model.clone();
       c.scale.set(0.2, 0.2, 0.2);
-      c.position.copy(models.moon.model.position);
-      c.position.x += 1;
+      c.position.copy(models.dish.model.position);
+      c.position.x += 1.5;
       models.cubes.push(c);
       scene.add(c);
     }
