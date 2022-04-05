@@ -61,13 +61,16 @@ async function main() {
   const world = new World(scene);
   await world.init();
 
-  document.addEventListener("click", e => {
-    const x = (e.clientX / window.innerWidth) * 2 - 1;
-    const y = (e.clientY / window.innerHeight) * 2 - 1;
-    world.spawn(x, y);
-  }, false);
+  document.addEventListener(
+    "click",
+    e => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      world.spawn(x * 11.5, -y * 7);
+    },
+    false
+  );
 
-  
   animate(world);
 }
 

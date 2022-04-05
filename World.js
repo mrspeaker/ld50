@@ -6,11 +6,55 @@ import make_wave from "./make_wave.js";
 const { GLTFLoader } = Loaders;
 const loader = new GLTFLoader();
 
+class Dish {
+  constructor(model, dir) {
+    this.model = model.clone();
+    this.running = true;
+    this.freq = 1;
+    this.freq_t = 0;
+    this.output = 0;
+    this.dir = dir;
+    return this;
+  }
+  update(dt, time) {
+    const { running, freq, model, dir } = this;
+    if (!running) return;
+    const freq_in = 1 / freq;
+    this.freq_t += dt;
+
+    if (this.freq_t > freq_in) {
+      this.freq_t -= freq_in;
+      // Trigger.
+      this.output = 1;
+    } else {
+      this.output = 0;
+    }
+
+    model.rotation.y = (this.freq_t / freq_in) * Math.PI * 2;
+    model.rotation.y -= dir;
+  }
+}
+
+class Electron {
+  constructor(model, dir, speed) {
+    this.model = model.clone();
+    this.dir = dir;
+    this.speed = speed;
+    this.output = false;
+  }
+  update(dt, time) {
+    const { model, speed, dir } = this;
+
+    model.position.x += speed * dt;
+  }
+}
+
 class World {
   constructor(scene) {
     this.scene = scene;
     this.mixer = null;
-    this.models = { cubes: [], other:{} };
+    this.models = { cubes: [], other: {} };
+    this.ents = [];
     this.times = {};
   }
 
@@ -42,20 +86,21 @@ class World {
     const { man, tree, moon, cube, compy, dish } = models;
     man.model.position.set(-0.5, 0, 0);
     man.model.rotation.z = (Math.PI / 180) * -25;
-    tree.model.position.set(-2, 0, 0);
 
-    scene.add(man.model);
+    tree.model.position.set(-2, 0, 0);
     scene.add(tree.model);
 
+    scene.add(man.model);
+
     moon.model.position.set(2, -1.5, 0);
-    moon.model.scale.set(0.75,0.75,0.75);
+    moon.model.scale.set(0.75, 0.75, 0.75);
     scene.add(moon.model);
 
-    dish.model.position.set(-4, 3, 0);
-    dish.model.rotation.y = -Math.PI / 2;      
-
-    scene.add(dish.model);
-
+    const d = new Dish(dish.model, Math.PI / 2);
+    d.model.position.set(-4, 3, 0);
+    d.model.rotation.y = -Math.PI / 2;
+    scene.add(d.model);
+    this.ents.push(d);
 
     cube.model.position.set(0.5, 0.5, -0.5);
     scene.add(cube.model);
@@ -68,10 +113,8 @@ class World {
     compy.model.position.set(2.5, 3, 0);
     scene.add(compy.model);
 
-
     // Anims
     const mixer = new THREE.AnimationMixer(man.model);
-    console.log(man.animations[0]);
     mixer.clipAction(man.animations[0]).play();
     this.mixer = mixer;
 
@@ -91,30 +134,19 @@ class World {
 
   spawn(x, y) {
     const { scene, models } = this;
-    const c = models.moon.model.clone();
-    c.scale.set(0.2, 0.2, 0.2);
-    c.position.set(x * 11.5, -y * 7, models.moon.model.position.z);
-    models.cubes.push(c);
-    scene.add(c);
-
+    const elec = new Electron(models.moon.model, 0, 1);
+    elec.model.scale.set(0.1, 0.1, 0.1);
+    elec.model.position.set(x, y, 0);
+    models.cubes.push(elec);
+    scene.add(elec.model);
   }
 
   update(dt, time, scene) {
-    const { mixer, models, times } = this;
-
-    if (time > times.moon) {
-      times.moon += 4.5;
-      if (times.moom < time) times.moon = time + 4.5;
-      // spawn.
-      const c = models.moon.model.clone();
-      c.scale.set(0.2, 0.2, 0.2);
-      c.position.copy(models.dish.model.position);
-      c.position.x += 1.5;
-      models.cubes.push(c);
-      scene.add(c);
-    }
+    const { mixer, models, times, ents } = this;
 
     //    models.tree.model.rotation.y += dt * -0.2;
+
+    ents[0].freq = Math.sin(Date.now() / 10000) + 1;
 
     mixer.update(dt);
     models.moon.model.rotation.y += 1 * dt;
@@ -127,15 +159,30 @@ class World {
       }
     });
 
+    ents.forEach(e => {
+      e.update(dt, time);
+      if (e.output === 1) {
+        this.spawn(e.model.position.x + e.dir, e.model.position.y);
+      }
+    });
+
     models.compy.model.rotation.y += -0.3 * dt;
-    models.dish.model.rotation.y += 1.4 * dt;
+    //    models.dish.model.rotation.y += 1.4 * dt;
 
     models.cubes.forEach((c, i) => {
-      c.position.x += 0.5 * dt;
-      c.rotation.x += 1 * dt;
-      if (c.position.x > 5) {
-        scene.remove(c);
-        models.cubes = models.cubes.filter(cu => cu != c);
+      if (c.update) {
+        c.update(dt, time);
+        if (c.model.position.x > 5) {
+          scene.remove(c.model);
+          models.cubes = models.cubes.filter(cu => cu != c.model);
+        }
+      } else {
+        c.position.x += 0.5 * dt;
+        c.rotation.x += 1 * dt;
+        if (c.position.x > 5) {
+          scene.remove(c);
+          models.cubes = models.cubes.filter(cu => cu != c);
+        }
       }
     });
 
