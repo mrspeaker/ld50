@@ -89,11 +89,22 @@ class World {
     models.lines = [line1, line2, line3];
   }
 
+  spawn(x, y) {
+    const { scene, models } = this;
+    const c = models.moon.model.clone();
+    c.scale.set(0.2, 0.2, 0.2);
+    c.position.set(x * 11.5, -y * 7, models.moon.model.position.z);
+    models.cubes.push(c);
+    scene.add(c);
+
+  }
+
   update(dt, time, scene) {
     const { mixer, models, times } = this;
 
     if (time > times.moon) {
       times.moon += 4.5;
+      if (times.moom < time) times.moon = time + 4.5;
       // spawn.
       const c = models.moon.model.clone();
       c.scale.set(0.2, 0.2, 0.2);
@@ -119,7 +130,7 @@ class World {
     models.compy.model.rotation.y += -0.3 * dt;
     models.dish.model.rotation.y += 1.4 * dt;
 
-    models.cubes.forEach(c => {
+    models.cubes.forEach((c, i) => {
       c.position.x += 0.5 * dt;
       c.rotation.x += 1 * dt;
       if (c.position.x > 5) {

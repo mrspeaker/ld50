@@ -17,8 +17,8 @@ const camera = new THREE.OrthographicCamera(
   (frustumSize * aspect) / 2,
   frustumSize / 2 - 2,
   frustumSize / -2 - 2.01,
-  1,
-  20
+  -100,
+  100
 );
 
 const renderer = new WebGLRenderer();
@@ -60,6 +60,14 @@ function animate(world) {
 async function main() {
   const world = new World(scene);
   await world.init();
+
+  document.addEventListener("click", e => {
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = (e.clientY / window.innerHeight) * 2 - 1;
+    world.spawn(x, y);
+  }, false);
+
+  
   animate(world);
 }
 
