@@ -1,53 +1,12 @@
 import * as THREE from "./libs/three.module.js";
 import * as Loaders from "./libs/GLTFLoader.js";
 
+import { make_dish } from "./dish.js";
+import { make_electron } from "./electron.js";
 import make_wave from "./make_wave.js";
 
 const { GLTFLoader } = Loaders;
 const loader = new GLTFLoader();
-
-class Dish {
-  constructor(model, dir) {
-    this.model = model.clone();
-    this.running = true;
-    this.freq = 1;
-    this.freq_t = 0;
-    this.output = 0;
-    this.dir = dir;
-    return this;
-  }
-  update(dt, time) {
-    const { running, freq, model, dir } = this;
-    if (!running) return;
-    const freq_in = 1 / freq;
-    this.freq_t += dt;
-
-    if (this.freq_t > freq_in) {
-      this.freq_t -= freq_in;
-      // Trigger.
-      this.output = 1;
-    } else {
-      this.output = 0;
-    }
-
-    model.rotation.y = (this.freq_t / freq_in) * Math.PI * 2;
-    model.rotation.y -= dir;
-  }
-}
-
-class Electron {
-  constructor(model, dir, speed) {
-    this.model = model.clone();
-    this.dir = dir;
-    this.speed = speed;
-    this.output = false;
-  }
-  update(dt, time) {
-    const { model, speed, dir } = this;
-
-    model.position.x += speed * dt;
-  }
-}
 
 class World {
   constructor(scene) {
@@ -55,14 +14,11 @@ class World {
     this.mixer = null;
     this.models = { cubes: [], other: {} };
     this.ents = [];
-    this.times = {};
   }
 
   async init() {
-    const { scene, models, times } = this;
+    const { scene, models } = this;
     const modelData = await loadModels();
-
-    times.moon = 0;
 
     // Add them to models
     Object.entries(modelData).reduce((ac, el) => {
@@ -96,7 +52,7 @@ class World {
     moon.model.scale.set(0.75, 0.75, 0.75);
     scene.add(moon.model);
 
-    const d = new Dish(dish.model, Math.PI / 2);
+    const d = make_dish(dish.model, Math.PI / 2);
     d.model.position.set(-4, 3, 0);
     d.model.rotation.y = -Math.PI / 2;
     scene.add(d.model);
@@ -134,7 +90,7 @@ class World {
 
   spawn(x, y) {
     const { scene, models } = this;
-    const elec = new Electron(models.moon.model, 0, 1);
+    const elec = make_electron(models.moon.model, 0, 1);
     elec.model.scale.set(0.1, 0.1, 0.1);
     elec.model.position.set(x, y, 0);
     models.cubes.push(elec);
@@ -142,7 +98,7 @@ class World {
   }
 
   update(dt, time, scene) {
-    const { mixer, models, times, ents } = this;
+    const { mixer, models, ents } = this;
 
     //    models.tree.model.rotation.y += dt * -0.2;
 
@@ -160,7 +116,7 @@ class World {
     });
 
     ents.forEach(e => {
-      e.update(dt, time);
+      e.update(e, dt, time);
       if (e.output === 1) {
         this.spawn(e.model.position.x + e.dir, e.model.position.y);
       }
@@ -171,7 +127,7 @@ class World {
 
     models.cubes.forEach((c, i) => {
       if (c.update) {
-        c.update(dt, time);
+        c.update(c, dt, time);
         if (c.model.position.x > 5) {
           scene.remove(c.model);
           models.cubes = models.cubes.filter(cu => cu != c.model);
